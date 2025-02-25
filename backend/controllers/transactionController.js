@@ -202,7 +202,298 @@ const getTransaction = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+const getTransactionClubbedCategory = async (req, res) => {
+  const currentUserId = req._id;
+  console.log("getBugetsClubbedTransactionsMonthCategory", currentUserId);
 
+  const transactions = await Transactions.find({ owner: currentUserId });
+  const groupedTransactions = transactions.reduce((acc, transaction) => {
+    const date = new Date(budget.date);
+
+    if (!acc[monthYear]) {
+      acc[monthYear] = {};
+    }
+    if (!acc[monthYear][transaction.category]) {
+      acc[monthYear][transaction.category] = [];
+    }
+    acc[monthYear][budget.category].push(transactions);
+    return acc;
+  }, {});
+};
+// by reduce method
+const getTransactionClubbedMonthsCategory = async (req, res) => {
+  try {
+    const currentUserId = req._id;
+    console.log("getBugetsClubbedTransactionsMonthCategory", currentUserId);
+
+    const transactions = await Transactions.find({ owner: currentUserId });
+    const groupedTransactions = transactions.reduce((acc, transaction) => {
+      const date = new Date(budget.date);
+      const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`; // Format: YYYY-MM
+      if (!acc[monthYear]) {
+        acc[monthYear] = { income: 0, expense: 0, details: [] };
+      }
+      if (transaction.type === "income") {
+        acc[monthYear].income = acc[monthYear].income + transaction.amount;
+      } else if (transaction.type === "expense") {
+        acc[monthYear].expense = acc[monthYear].expense + transaction.amount;
+      }
+      acc[monthYear].details.push(transaction);
+      return acc;
+    }, {});
+    console.log(groupedTransactions);
+
+    return res.status(200).json({ groupedTransactions });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+// by  foreach method
+const getTransactionClubbedMonthsCategoryForEach = async (req, res) => {
+  try {
+    const currentUserId = req._id;
+    console.log("getBugetsClubbedTransactionsMonthCategory", currentUserId);
+
+    const transactions = await Transactions.find({ owner: currentUserId });
+    const groupedTransactions = {};
+    transactions.forEach((transaction) => {
+      const date = new Date(budget.date);
+      const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`; // Format: YYYY-MM
+
+      if (!groupedTransactions[monthYear]) {
+        groupedTransactions[monthYear] = {
+          income: 0,
+          expenses: 0,
+          details: [],
+        };
+      }
+
+      if (transaction.type === "income") {
+        groupedTransactions[monthYear].income =
+          groupedTransactions[monthYear].income + transaction.amount;
+      } else if (transaction.type === "expense") {
+        groupedTransactions[monthYear].expense =
+          groupedTransactions[monthYear].expenses + transaction.amount;
+      }
+      groupedTransactions[monthYear].details.push(transaction);
+    });
+    console.log(groupedTransactions);
+
+    return res.status(200).json({ groupedTransactions });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const getMonthCategoryTransactionsForEach = async (req, res) => {
+  try {
+    const currentUserId = req._id;
+    console.log("getBugetsClubbedTransactionsMonthCategory", currentUserId);
+
+    const transactions = await Transactions.find({ owner: currentUserId });
+    const groupedTransactions = {};
+    transactions.forEach((transaction) => {
+      const date = new Date(budget.date);
+      const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`; // Format: YYYY-MM
+      if (!groupedTransactions[monthYear]) {
+        groupedTransactions[monthYear] = {};
+      }
+
+      if (!groupedTransactions[monthYear][transaction.category]) {
+        groupedTransactions[monthYear][transaction.category] = {
+          income: 0,
+          expenses: 0,
+          details: [],
+        };
+      }
+
+      if (transaction.type === "income") {
+        groupedTransactions[monthYear][transaction.category].income =
+          groupedTransactions[monthYear][transaction.category].income +
+          transaction.amount;
+      } else if (transaction.type === "expense") {
+        groupedTransactions[monthYear][transaction.category].expense =
+          groupedTransactions[monthYear][transaction.category].expenses +
+          transaction.amount;
+      }
+      groupedTransactions[monthYear][transaction.category].details.push(
+        transaction
+      );
+    });
+    console.log(groupedTransactions);
+
+    return res.status(200).json({ groupedTransactions });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+// Example Output
+// For your provided transactions, the API would return:
+
+// json
+// Copy
+// Edit
+// {
+//   "2025-02": {
+//     "Groceries": {
+//       "income": 0,
+//       "expenses": 50,
+//       "transactions": [
+//         {
+//           "_id": "67bc3c641107d9e8f43b47c5",
+//           "amount": 50,
+//           "description": "Bought groceries",
+//           "type": "expense",
+//           "category": "Groceries",
+//           "date": "2025-02-20T00:00:00.000+00:00"
+//         }
+//       ]
+//     },
+//     "Freelance Work": {
+//       "income": 1000,
+//       "expenses": 0,
+//       "transactions": [
+//         {
+//           "_id": "67bc3c8d1107d9e8f43b47ca",
+//           "amount": 1000,
+//           "description": "Freelance project payment",
+//           "type": "income",
+//           "category": "Freelance Work",
+//           "date": "2025-02-18T00:00:00.000+00:00"
+//         }
+//       ]
+//     },
+//     "Job Work": {
+//       "income": 1000,
+//       "expenses": 0,
+//       "transactions": [
+//         {
+//           "_id": "67bc6d75bfdaaf3bf28b3674",
+//           "amount": 1000,
+//           "description": "Job project payment",
+//           "type": "income",
+//           "category": "Job Work",
+//           "date": "2025-02-18T00:00:00.000+00:00"
+//         }
+//       ]
+//     },
+//     "side Job Work": {
+//       "income": 800,
+//       "expenses": 0,
+//       "transactions": [
+//         {
+//           "_id": "67bc6dabbfdaaf3bf28b367d",
+//           "amount": 800,
+//           "description": "side project payment",
+//           "type": "income",
+//           "category": "side Job Work",
+//           "date": "2025-02-18T00:00:00.000+00:00"
+//         }
+//       ]
+//     }
+//   }
+// }
+
+const getMonthCategoryTransactionsReduce = async (req, res) => {
+  try {
+    const currentUserId = req._id;
+    console.log("getBugetsClubbedTransactionsMonthCategory", currentUserId);
+
+    const transactions = await Transactions.find({ owner: currentUserId });
+    const groupedTransactions = transaction.reduce((acc, transaction) => {
+      const date = new Date(budget.date);
+      const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`; // Format: YYYY-MM
+      if (!acc[monthYear]) {
+        acc[monthYear] = {};
+      }
+
+      if (!acc[monthYear][transaction.category]) {
+        acc[monthYear][transaction.category] = {
+          income: 0,
+          expenses: 0,
+          details: [],
+        };
+      }
+
+      if (transaction.type === "income") {
+        acc[monthYear][transaction.category].income =
+          acc[monthYear][transaction.category].income + transaction.amount;
+      } else if (transaction.type === "expense") {
+        acc[monthYear][transaction.category].expense =
+          acc[monthYear][transaction.category].expenses + transaction.amount;
+      }
+      acc[monthYear][transaction.category].details.push(transaction);
+      return acc;
+    }, {});
+    console.log(groupedTransactions);
+
+    return res.status(200).json({ groupedTransactions });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+// Example Output
+// json
+// Copy
+// Edit
+// {
+//   "2025-02": {
+//     "Groceries": {
+//       "income": 0,
+//       "expense": 50,
+//       "transactions": [
+//         {
+//           "_id": "67bc3c641107d9e8f43b47c5",
+//           "amount": 50,
+//           "description": "Bought groceries",
+//           "type": "expense",
+//           "category": "Groceries",
+//           "date": "2025-02-20T00:00:00.000+00:00"
+//         }
+//       ]
+//     },
+//     "Freelance Work": {
+//       "income": 1000,
+//       "expense": 0,
+//       "transactions": [
+//         {
+//           "_id": "67bc3c8d1107d9e8f43b47ca",
+//           "amount": 1000,
+//           "description": "Freelance project payment",
+//           "type": "income",
+//           "category": "Freelance Work",
+//           "date": "2025-02-18T00:00:00.000+00:00"
+//         }
+//       ]
+//     },
+//     "Job Work": {
+//       "income": 1000,
+//       "expense": 0,
+//       "transactions": [
+//         {
+//           "_id": "67bc6d75bfdaaf3bf28b3674",
+//           "amount": 1000,
+//           "description": "Job project payment",
+//           "type": "income",
+//           "category": "Job Work",
+//           "date": "2025-02-18T00:00:00.000+00:00"
+//         }
+//       ]
+//     }
+//   }
+// }
 module.exports = {
   createTransactionController,
   updateTransactionController,

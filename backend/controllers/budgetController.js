@@ -47,6 +47,361 @@ const getBudgets = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+// const getBugetsClubbedMonthsCategory = async (req, res) => {
+//   try {
+//     const currentUserId = req._id;
+//     console.log("getBugetsClubbedMonthCategory", currentUserId);
+
+//     const budgets = await Budgets.find({ owner: currentUserId });
+//     const groupedBudgets = budgets.reduce((acc, budget) => {
+//       const date = new Date(budget.date);
+//       const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1)
+//         .toString()
+//         .padStart(2, "0")}`; // Format: YYYY-MM
+//       if (!acc[monthYear]) {
+//         acc[monthYear] = {};
+//       }
+//       if (!acc[monthYear][budget.category]) {
+//         acc[monthYear][budget.category] = [];
+//       }
+//       acc[monthYear][budget.category].push(budgets);
+//       return acc;
+//     }, {});
+
+//     return res.status(200).json({ groupedBudgets });
+//   } catch (error) {
+//     console.error("Error fetching budgets:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+// Example Output
+// If we have the following budgets:
+
+// json
+// Copy
+// Edit
+// [
+//   {
+//     "_id": "67bcd82a591f7350115c1208",
+//     "owner": "67bb6da598b3325eff931385",
+//     "category": "Food",
+//     "amount": 300,
+//     "alertThreshold": 50,
+//     "startDate": "2025-02-07T00:00:00.000+00:00",
+//     "endDate": "2025-03-09T00:00:00.000+00:00",
+//     "createdAt": "2025-02-24T20:35:54.049+00:00"
+//   },
+//   {
+//     "_id": "67bcd82a591f7350115c1209",
+//     "owner": "67bb6da598b3325eff931385",
+//     "category": "Food",
+//     "amount": 500,
+//     "alertThreshold": 100,
+//     "startDate": "2025-02-15T00:00:00.000+00:00",
+//     "endDate": "2025-03-20T00:00:00.000+00:00",
+//     "createdAt": "2025-02-24T20:40:00.000+00:00"
+//   },
+//   {
+//     "_id": "67bcd82a591f7350115c1210",
+//     "owner": "67bb6da598b3325eff931385",
+//     "category": "Transport",
+//     "amount": 200,
+//     "alertThreshold": 30,
+//     "startDate": "2025-02-10T00:00:00.000+00:00",
+//     "endDate": "2025-02-28T00:00:00.000+00:00",
+//     "createdAt": "2025-02-24T20:45:00.000+00:00"
+//   }
+// ]
+// The API will return:
+
+// json
+// Copy
+// Edit
+// {
+//   "budgets": {
+//     "2025-02": {
+//       "Food": {
+//         "totalAmount": 800,
+//         "budgets": [
+//           {
+//             "_id": "67bcd82a591f7350115c1208",
+//             "owner": "67bb6da598b3325eff931385",
+//             "category": "Food",
+//             "amount": 300,
+//             "alertThreshold": 50,
+//             "startDate": "2025-02-07T00:00:00.000+00:00",
+//             "endDate": "2025-03-09T00:00:00.000+00:00",
+//             "createdAt": "2025-02-24T20:35:54.049+00:00"
+//           },
+//           {
+//             "_id": "67bcd82a591f7350115c1209",
+//             "owner": "67bb6da598b3325eff931385",
+//             "category": "Food",
+//             "amount": 500,
+//             "alertThreshold": 100,
+//             "startDate": "2025-02-15T00:00:00.000+00:00",
+//             "endDate": "2025-03-20T00:00:00.000+00:00",
+//             "createdAt": "2025-02-24T20:40:00.000+00:00"
+//           }
+//         ]
+//       },
+//       "Transport": {
+//         "totalAmount": 200,
+//         "budgets": [
+//           {
+//             "_id": "67bcd82a591f7350115c1210",
+//             "owner": "67bb6da598b3325eff931385",
+//             "category": "Transport",
+//             "amount": 200,
+//             "alertThreshold": 30,
+//             "startDate": "2025-02-10T00:00:00.000+00:00",
+//             "endDate": "2025-02-28T00:00:00.000+00:00",
+//             "createdAt": "2025-02-24T20:45:00.000+00:00"
+//           }
+//         ]
+//       }
+//     }
+//   }
+// }
+
+// considering only the start date
+// const getBugetsClubbedMonthsCategory = async (req, res) => {
+//   try {
+//     const currentUserId = req._id;
+//     console.log("getBudgets", currentUserId);
+
+//     // Fetch budgets from the database
+//     const budgets = await Budgets.find({ owner: currentUserId });
+
+//     // Grouping budgets by month and category
+//     const groupedBudgets = budgets.reduce((acc, budget) => {
+//       const startDate = new Date(budget.startDate);
+//       const monthYear = `${startDate.getFullYear()}-${(startDate.getMonth() + 1)
+//         .toString()
+//         .padStart(2, "0")}`; // Format: YYYY-MM
+
+//       if (!acc[monthYear]) {
+//         acc[monthYear] = {};
+//       }
+
+//       if (!acc[monthYear][budget.category]) {
+//         acc[monthYear][budget.category] = {
+//           totalAmount: 0,
+//           budgets: [],
+//         };
+//       }
+
+//       // Add the budget entry
+//       acc[monthYear][budget.category].budgets.push(budget);
+//       acc[monthYear][budget.category].totalAmount += budget.amount;
+
+//       return acc;
+//     }, {});
+
+//     return res.status(200).json({ budgets: groupedBudgets });
+//   } catch (error) {
+//     console.error("Error fetching budgets:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
+// Example Output
+// If we have the following budgets:
+
+// json
+// Copy
+// Edit
+// [
+//   {
+//     "_id": "67bcd82a591f7350115c1208",
+//     "owner": "67bb6da598b3325eff931385",
+//     "category": "Food",
+//     "amount": 300,
+//     "alertThreshold": 50,
+//     "startDate": "2025-02-07T00:00:00.000+00:00",
+//     "endDate": "2025-03-09T00:00:00.000+00:00",
+//     "createdAt": "2025-02-24T20:35:54.049+00:00"
+//   },
+//   {
+//     "_id": "67bcd82a591f7350115c1209",
+//     "owner": "67bb6da598b3325eff931385",
+//     "category": "Food",
+//     "amount": 500,
+//     "alertThreshold": 100,
+//     "startDate": "2025-02-15T00:00:00.000+00:00",
+//     "endDate": "2025-03-20T00:00:00.000+00:00",
+//     "createdAt": "2025-02-24T20:40:00.000+00:00"
+//   },
+//   {
+//     "_id": "67bcd82a591f7350115c1210",
+//     "owner": "67bb6da598b3325eff931385",
+//     "category": "Transport",
+//     "amount": 200,
+//     "alertThreshold": 30,
+//     "startDate": "2025-02-10T00:00:00.000+00:00",
+//     "endDate": "2025-02-28T00:00:00.000+00:00",
+//     "createdAt": "2025-02-24T20:45:00.000+00:00"
+//   }
+// ]
+// The API will return:
+
+// json
+// Copy
+// Edit
+// {
+//   "budgets": {
+//     "2025-02": {
+//       "Food": {
+//         "totalAmount": 800,
+//         "budgets": [
+//           {
+//             "_id": "67bcd82a591f7350115c1208",
+//             "owner": "67bb6da598b3325eff931385",
+//             "category": "Food",
+//             "amount": 300,
+//             "alertThreshold": 50,
+//             "startDate": "2025-02-07T00:00:00.000+00:00",
+//             "endDate": "2025-03-09T00:00:00.000+00:00",
+//             "createdAt": "2025-02-24T20:35:54.049+00:00"
+//           },
+//           {
+//             "_id": "67bcd82a591f7350115c1209",
+//             "owner": "67bb6da598b3325eff931385",
+//             "category": "Food",
+//             "amount": 500,
+//             "alertThreshold": 100,
+//             "startDate": "2025-02-15T00:00:00.000+00:00",
+//             "endDate": "2025-03-20T00:00:00.000+00:00",
+//             "createdAt": "2025-02-24T20:40:00.000+00:00"
+//           }
+//         ]
+//       },
+//       "Transport": {
+//         "totalAmount": 200,
+//         "budgets": [
+//           {
+//             "_id": "67bcd82a591f7350115c1210",
+//             "owner": "67bb6da598b3325eff931385",
+//             "category": "Transport",
+//             "amount": 200,
+//             "alertThreshold": 30,
+//             "startDate": "2025-02-10T00:00:00.000+00:00",
+//             "endDate": "2025-02-28T00:00:00.000+00:00",
+//             "createdAt": "2025-02-24T20:45:00.000+00:00"
+//           }
+//         ]
+//       }
+//     }
+//   }
+// }
+// Final Features
+// ✔ Groups budgets by month (YYYY-MM format).
+// ✔ Groups budgets by category inside each month.
+// ✔ Calculates total spending per category.
+// ✔ Maintains a list of all budgets under each category.
+
+// Would you like to add filtering by a specific date range or alert threshold? 🚀
+
+
+// 2/2
+
+// You said:
+// why end is not considered 
+// ChatGPT said:
+// You're right to ask about why endDate is not considered!
+
+// Why startDate is used instead of endDate?
+// startDate represents when the budget starts, so it's a natural choice for categorizing budgets into a particular month.
+// endDate is the deadline for the budget, but using it alone would miss ongoing budgets that started earlier.
+// What if we want to consider endDate too?
+// If a budget spans multiple months, we should include it in each month between startDate and endDate.
+
+
+
+
+const getBugetsClubbedMonthsCategory = async (req, res) => {
+  try {
+    const currentUserId = req._id;
+    console.log("getBugetsClubbedMonthCategory", currentUserId);
+
+    const budgets = await Budgets.find({ owner: currentUserId });
+    const groupedBudgets = budgets.reduce((acc, budget) => {
+      const start = new Date(budget.startDate);
+      const end = new Date(budget.endDate);
+      let current = new Date(start);
+      while(current<=end){
+      const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`; // Format: YYYY-MM
+      if (!acc[monthYear]) {
+        acc[monthYear] = {};
+      }
+      if (!acc[monthYear][budget.category]) {
+        acc[monthYear][budget.category] = {
+          totalAmount:0,
+          budgets=[]
+        }
+      }
+      acc[monthYear][budget.category].budgets.push(budget)
+      acc[monthYear][budget.category].totalAmount=acc[monthYear][budget.category].totalAmount+budget.amount
+    }
+      return acc;
+    }, {});
+
+    return res.status(200).json({ groupedBudgets });
+  } catch (error) {
+    console.error("Error fetching budgets:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+// How This Works?
+// Loop from startDate to endDate month by month.
+// For each month, the budget is added under its category.
+// Handles budgets that span multiple months.
+// Example
+// Budget Entry
+// json
+// Copy
+// Edit
+// {
+//   "_id": "67bcd82a591f7350115c1208",
+//   "owner": "67bb6da598b3325eff931385",
+//   "category": "Food",
+//   "amount": 1000,
+//   "alertThreshold": 50,
+//   "startDate": "2025-02-07T00:00:00.000+00:00",
+//   "endDate": "2025-04-09T00:00:00.000+00:00",
+//   "createdAt": "2025-02-24T20:35:54.049+00:00"
+// }
+// Output
+// json
+// Copy
+// Edit
+// {
+//   "budgets": {
+//     "2025-02": {
+//       "Food": {
+//         "totalAmount": 1000,
+//         "budgets": [{ "category": "Food", "amount": 1000, "startDate": "2025-02-07", "endDate": "2025-04-09" }]
+//       }
+//     },
+//     "2025-03": {
+//       "Food": {
+//         "totalAmount": 1000,
+//         "budgets": [{ "category": "Food", "amount": 1000, "startDate": "2025-02-07", "endDate": "2025-04-09" }]
+//       }
+//     },
+//     "2025-04": {
+//       "Food": {
+//         "totalAmount": 1000,
+//         "budgets": [{ "category": "Food", "amount": 1000, "startDate": "2025-02-07", "endDate": "2025-04-09" }]
+//       }
+//     }
+//   }
+// }
+// Now, the budget appears in Feb, March, and April.
+
+
 const updateBudget = async (req, res) => {
   try {
     const { budgetId } = req.params;
@@ -80,6 +435,47 @@ const updateBudget = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+// Example
+// Budget Entry
+// json
+// Copy
+// Edit
+// {
+//   "_id": "67bcd82a591f7350115c1208",
+//   "owner": "67bb6da598b3325eff931385",
+//   "category": "Food",
+//   "amount": 1000,
+//   "alertThreshold": 50,
+//   "startDate": "2025-02-07T00:00:00.000+00:00",
+//   "endDate": "2025-04-09T00:00:00.000+00:00",
+//   "createdAt": "2025-02-24T20:35:54.049+00:00"
+// }
+// Output
+// json
+// Copy
+// Edit
+// {
+//   "budgets": {
+//     "2025-02": {
+//       "Food": {
+//         "totalAmount": 1000,
+//         "budgets": [{ "category": "Food", "amount": 1000, "startDate": "2025-02-07", "endDate": "2025-04-09" }]
+//       }
+//     },
+//     "2025-03": {
+//       "Food": {
+//         "totalAmount": 1000,
+//         "budgets": [{ "category": "Food", "amount": 1000, "startDate": "2025-02-07", "endDate": "2025-04-09" }]
+//       }
+//     },
+//     "2025-04": {
+//       "Food": {
+//         "totalAmount": 1000,
+//         "budgets": [{ "category": "Food", "amount": 1000, "startDate": "2025-02-07", "endDate": "2025-04-09" }]
+//       }
+//     }
+//   }
+// }
 
 const deleteBudget = async (req, res) => {
   try {
@@ -195,4 +591,9 @@ const checkBudgetController = async (req, res) => {
   }
 };
 
-module.exports = { addBudgetController, checkBudgetController, getBudgets };
+module.exports = {
+  addBudgetController,
+  getBugetsClubbedMonthsCategory,
+  checkBudgetController,
+  getBudgets,
+};
