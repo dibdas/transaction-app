@@ -302,11 +302,10 @@ const getBudgets = async (req, res) => {
 
 // Would you like to add filtering by a specific date range or alert threshold? 🚀
 
-
 // 2/2
 
 // You said:
-// why end is not considered 
+// why end is not considered
 // ChatGPT said:
 // You're right to ask about why endDate is not considered!
 
@@ -315,9 +314,6 @@ const getBudgets = async (req, res) => {
 // endDate is the deadline for the budget, but using it alone would miss ongoing budgets that started earlier.
 // What if we want to consider endDate too?
 // If a budget spans multiple months, we should include it in each month between startDate and endDate.
-
-
-
 
 const getBugetsClubbedMonthsCategory = async (req, res) => {
   try {
@@ -329,22 +325,23 @@ const getBugetsClubbedMonthsCategory = async (req, res) => {
       const start = new Date(budget.startDate);
       const end = new Date(budget.endDate);
       let current = new Date(start);
-      while(current<=end){
-      const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}`; // Format: YYYY-MM
-      if (!acc[monthYear]) {
-        acc[monthYear] = {};
-      }
-      if (!acc[monthYear][budget.category]) {
-        acc[monthYear][budget.category] = {
-          totalAmount:0,
-          budgets=[]
+      while (current <= end) {
+        const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1)
+          .toString()
+          .padStart(2, "0")}`; // Format: YYYY-MM
+        if (!acc[monthYear]) {
+          acc[monthYear] = {};
         }
+        if (!acc[monthYear][budget.category]) {
+          acc[monthYear][budget.category] = {
+            totalAmount: 0,
+            details: [],
+          };
+        }
+        acc[monthYear][budget.category].details.push(budget);
+        acc[monthYear][budget.category].totalAmount =
+          acc[monthYear][budget.category].totalAmount + budget.amount;
       }
-      acc[monthYear][budget.category].budgets.push(budget)
-      acc[monthYear][budget.category].totalAmount=acc[monthYear][budget.category].totalAmount+budget.amount
-    }
       return acc;
     }, {});
 
@@ -400,7 +397,6 @@ const getBugetsClubbedMonthsCategory = async (req, res) => {
 //   }
 // }
 // Now, the budget appears in Feb, March, and April.
-
 
 const updateBudget = async (req, res) => {
   try {
